@@ -5,6 +5,7 @@ import SliderControl from "./SliderControl";
 export default function Carousel() {
 	const [currentImage, setCurrentImage] = useState(0);
 	const carouselRef = useRef(null);
+	const [imagesLoaded, setImagesLoaded] = useState(0);
 	const [carouselTranslate, setCarouselTranslate] = useState(null);
 	const totalImages = images.length;
 
@@ -22,14 +23,18 @@ export default function Carousel() {
 				? initialOffset
 				: initialOffset - currentImage * imageWidth;
 		setCarouselTranslate(translate);
-	}, [currentImage]);
+	}, [currentImage, imagesLoaded]);
+
+	function handleImageLoad() {
+		setImagesLoaded(imagesLoaded + 1);
+	}
 
 	return (
 		<div
 			className={`relative p-12 flex flex-col gap-12 justify-center w-screen items-center bg-[var(--project-bg)]`}
 		>
 			<img
-				className="absolute inset-0 scale-75"
+				className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 scale-100"
 				src={bgDetails}
 				alt="bgDetails"
 			/>
@@ -50,15 +55,16 @@ export default function Carousel() {
 				>
 					{images.map((img, i) => (
 						<div
-							className={`relative w-[70%] flex-shrink-0 transition-transform duration-500 ${
+							className={`relative w-[70%]  flex-shrink-0 transition-transform duration-500 ${
 								currentImage !== i && "scale-75"
 							}`}
 							key={i}
 							ref={refs[i]}
+							onLoad={handleImageLoad}
 						>
 							<img
 								src={img}
-								className="w-full object-contain rounded-xl"
+								className="w-full aspect-video rounded-xl"
 								alt="carousel-item"
 							/>
 							<div className="absolute bottom-4 left-4 flex flex-col gap-2 w-1/2 p-4 bg-slate-300 bg-opacity-90 rounded-lg  text-bold text-[var(--para-text-color)]">
