@@ -1,68 +1,28 @@
-import React from "react";
-import rightArrow from "../assets/rightArrow.svg";
+import React, { useEffect, useRef, useState } from "react";
 import bgDetails from "../assets/bgDetails.svg";
+import SliderControl from "./SliderControl";
 
 export default function Carousel() {
-	const [currentImage, setCurrentImage] = React.useState(0);
+	const [currentImage, setCurrentImage] = useState(0);
+	const carouselRef = useRef(null);
+	const [carouselTranslate, setCarouselTranslate] = useState(null);
+	const totalImages = images.length;
 
 	const refs = images.reduce((acc, val, i) => {
 		acc[i] = React.createRef();
 		return acc;
 	}, {});
 
-	const scrollToImage = (i) => {
-		setCurrentImage(i);
-		refs[i].current.scrollIntoView({
-			behavior: "smooth",
-			block: "nearest",
-			inline: "center",
-		});
-	};
-
-	const totalImages = images.length;
-	const nextImage = () => {
-		if (currentImage >= totalImages - 1) {
-			scrollToImage(0);
-		} else {
-			scrollToImage(currentImage + 1);
-		}
-	};
-
-	const previousImage = () => {
-		if (currentImage === 0) {
-			scrollToImage(totalImages - 1);
-		} else {
-			scrollToImage(currentImage - 1);
-		}
-	};
-
-	const sliderControl = (isLeft) => (
-		<button
-			type="button"
-			onClick={isLeft ? previousImage : nextImage}
-			className={` ${
-				isLeft ? "left-2" : "right-2"
-			} absolute h-12 w-12 rounded-full z-10 top-1/2 -translate-y-1/2`}
-		>
-			<span
-				role="img"
-				aria-label={`Arrow ${isLeft ? "left" : "right"}`}
-			>
-				{isLeft ? (
-					<img
-						className="rotate-180"
-						src={rightArrow}
-						alt="right arrow"
-					/>
-				) : (
-					<img
-						src={rightArrow}
-						alt="right arrow"
-					/>
-				)}
-			</span>
-		</button>
-	);
+	useEffect(() => {
+		const windowWidth = carouselRef.current.offsetWidth;
+		const imageWidth = refs[currentImage].current.offsetWidth;
+		const initialOffset = (windowWidth - imageWidth) / 2;
+		const translate =
+			currentImage === 0
+				? initialOffset
+				: initialOffset - currentImage * imageWidth;
+		setCarouselTranslate(translate);
+	}, [currentImage]);
 
 	return (
 		<div
@@ -77,11 +37,20 @@ export default function Carousel() {
 				Projects
 			</h2>
 			<div className="relative w-full">
-				<div className="inline-flex overflow-x-hidden px-48">
-					{sliderControl(true)}
+				{SliderControl(
+					true,
+					currentImage,
+					setCurrentImage,
+					totalImages
+				)}
+				<div
+					ref={carouselRef}
+					className={`inline-flex transition-all duration-500`}
+					style={{ transform: `translateX(${carouselTranslate}px)` }}
+				>
 					{images.map((img, i) => (
 						<div
-							className={`relative w-full flex-shrink-0 transition-transform duration-500 ${
+							className={`relative w-[70%] flex-shrink-0 transition-transform duration-500 ${
 								currentImage !== i && "scale-75"
 							}`}
 							key={i}
@@ -102,8 +71,13 @@ export default function Carousel() {
 							</div>
 						</div>
 					))}
-					{sliderControl(false)}
 				</div>
+				{SliderControl(
+					false,
+					currentImage,
+					setCurrentImage,
+					totalImages
+				)}
 			</div>
 			<span className="flex gap-4 justify-center items-center">
 				{images.map((item, index) => {
@@ -138,4 +112,5 @@ const images = [
 	"https://unsplash.it/1350/720",
 	"https://unsplash.it/1351/720",
 	"https://unsplash.it/1352/720",
+	"https://unsplash.it/1353/720",
 ];
